@@ -2408,6 +2408,9 @@ function gotoPage(name, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const appEl = document.getElementById('app');
+  if(appEl) appEl.scrollTo({ top: 0, behavior: 'smooth' });
   if(name==='bar') renderBar();
   if(name==='cuisine') renderCuisine();
   if(name==='bilan') renderBilan();
@@ -2512,6 +2515,7 @@ function renderAccueil() {
       <button class="btn btn-grey btn-sm" onclick="window.print()">🖨️ Imprimer</button>
       <button class="btn btn-grey btn-sm" onclick="testerSon()" title="Tester les notifications sonores">🔔 Tester son</button>
       <button class="btn btn-danger btn-sm" onclick="resetToutesLesDonnees()">🗑️ Réinitialiser tout</button>
+      <button class="btn btn-sm" style="background:rgba(230,126,34,0.15);color:var(--warn);border:1px solid rgba(230,126,34,0.3);" onclick="resetTables()">🪑 Reconfigurer 13 tables</button>
     </div>`;
   }
   document.getElementById('accueil-content').innerHTML = content;
@@ -5478,6 +5482,34 @@ function reinitSalle() {
   if (confirm('⚠️ Réinitialiser toutes les tables à "Libre" et vider les commandes ?')) {
     tablesData.forEach(t => { t.statut='libre'; t.commande=[]; });
     saveTablesData(); renderSalle(); toast('✅ Salle réinitialisée');
+  }
+}
+
+function resetTables() {
+  if (confirm('🪑 Réinitialiser la configuration des tables à 13 tables ?
+
+Cela va recréer T1→T4, T5→T7 (Terrasse), VIP1, VIP2, BAR, T11, T12, T13.
+
+⚠️ Les commandes en cours seront perdues.')) {
+    tablesData = [
+      {id:1,  num:'T1',   zone:'Salle principale', statut:'libre', couverts:4, commande:[]},
+      {id:2,  num:'T2',   zone:'Salle principale', statut:'libre', couverts:4, commande:[]},
+      {id:3,  num:'T3',   zone:'Salle principale', statut:'libre', couverts:2, commande:[]},
+      {id:4,  num:'T4',   zone:'Salle principale', statut:'libre', couverts:4, commande:[]},
+      {id:5,  num:'T5',   zone:'Terrasse',         statut:'libre', couverts:6, commande:[]},
+      {id:6,  num:'T6',   zone:'Terrasse',         statut:'libre', couverts:4, commande:[]},
+      {id:7,  num:'T7',   zone:'Terrasse',         statut:'libre', couverts:2, commande:[]},
+      {id:8,  num:'VIP1', zone:'Salon VIP',        statut:'libre', couverts:8, commande:[]},
+      {id:9,  num:'VIP2', zone:'Salon VIP',        statut:'libre', couverts:6, commande:[]},
+      {id:10, num:'BAR',  zone:'Bar',              statut:'libre', couverts:8, commande:[]},
+      {id:11, num:'T11',  zone:'Salle principale', statut:'libre', couverts:4, commande:[]},
+      {id:12, num:'T12',  zone:'Salle principale', statut:'libre', couverts:4, commande:[]},
+      {id:13, num:'T13',  zone:'Salle principale', statut:'libre', couverts:2, commande:[]},
+    ];
+    localStorage.setItem('aspen_tables_v1', JSON.stringify(tablesData));
+    db.ref('aspen/tables').set(tablesData)
+      .then(() => { toast('✅ 13 tables configurées avec succès !'); renderSalle(); renderCaisse(); })
+      .catch(() => { toast('✅ Tables mises à jour localement'); renderSalle(); renderCaisse(); });
   }
 }
 
